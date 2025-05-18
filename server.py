@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
-from flask_cors import CORS
 from processor import process_input
 import os
 import requests
@@ -14,7 +13,15 @@ import time
 from functools import wraps
 
 app = Flask(__name__, static_folder='static')
-CORS(app, origins=['http://localhost:5000', 'http://127.0.0.1:5000'])  # Allow both localhost and 127.0.0.1
+
+# Enable CORS for all routes
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
 app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
 app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
