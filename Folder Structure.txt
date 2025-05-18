@@ -1,0 +1,12 @@
+Folder Structureproject-root/
+├── main.py
+├── processor.py
+├── requirements.txt
+├── Dockerfile
+├── .env
+├── .gitignore
+└── public/
+    ├── index.html
+    └── static/
+        ├── style.css
+        └── app.js

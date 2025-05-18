@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Hub - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .model-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .model-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">AI Model Hub</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600">About</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600">Documentation</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Available AI Models</h1>
+            <p class="text-xl text-gray-600">Select a model to start analyzing your media</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Gemini Analyzer Model Card -->
+            <a href="/gemini-analyzer" class="model-card">
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl">
+                    <div class="flex items-center justify-center h-32 mb-4">
+                        <i class="fas fa-brain text-6xl text-blue-500"></i>
+                    </div>
+                    <h2 class="text-2xl font-semibold text-center mb-2">Gemini Analyzer</h2>
+                    <p class="text-gray-600 text-center mb-4">Analyze images, videos, and YouTube content using Google's Gemini AI</p>
+                    <div class="flex justify-center">
+                        <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Media Analysis
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Placeholder for Future Models -->
+            <div class="bg-gray-50 rounded-lg shadow-lg p-6 border-2 border-dashed border-gray-300">
+                <div class="flex items-center justify-center h-32 mb-4">
+                    <i class="fas fa-plus text-4xl text-gray-400"></i>
+                </div>
+                <h2 class="text-2xl font-semibold text-center mb-2 text-gray-400">Coming Soon</h2>
+                <p class="text-gray-400 text-center">More AI models will be added soon</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white shadow-lg mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <p class="text-center text-gray-600">© 2024 AI Model Hub. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html> 

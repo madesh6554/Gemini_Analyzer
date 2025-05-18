@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chat-history"></div>
+        <div class="input-area">
+            <button id="add-media" class="icon-btn">+</button>
+            <input type="text" id="prompt" placeholder="Ask about the media...">
+            <button id="send-btn">Send</button>
+        </div>
+        
+        <!-- Media Modal -->
+        <div id="media-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <button id="upload-btn">Upload File</button>
+                <input type="file" id="file-input" hidden accept="image/*,video/*">
+                <p class="or-divider">OR</p>
+                <input type="text" id="media-url" placeholder="Paste media URL here">
+                <button id="submit-url">Use URL</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

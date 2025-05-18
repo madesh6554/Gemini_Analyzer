@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Gemini Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f6f8fc 0%, #e9f0f7 100%);
+            min-height: 100vh;
+        }
+        .nav-blur {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .section {
+            margin-bottom: 4rem;
+        }
+        .section-title {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "•";
+            color: #4299e1;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-blur shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                        Gemini Analyzer
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors">Home</a>
+                    <a href="/about" class="text-gray-600 hover:text-blue-600 transition-colors text-blue-600">About</a>
+                    <a href="/docs" class="text-gray-600 hover:text-blue-600 transition-colors">Documentation</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="content-container">
+        <section class="section">
+            <h1 class="text-4xl font-bold mb-4 text-gray-800">About Gemini Analyzer</h1>
+            <p class="text-xl text-gray-600 mb-8">
+                Gemini Analyzer is an advanced AI-powered media analysis platform that leverages Google's Gemini AI model to provide deep insights into visual and multimedia content. This tool is designed for content creators, researchers, and businesses looking to understand and analyze various forms of media content using state-of-the-art AI technology.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="text-3xl font-semibold section-title">Key Features</h2>
+            <ul class="feature-list text-gray-700">
+                <li>Multi-format support for images, videos, and YouTube content</li>
+                <li>Real-time AI analysis using Google's Gemini model</li>
+                <li>Drag-and-drop file upload interface</li>
+                <li>URL-based content analysis</li>
+                <li>Customizable analysis prompts</li>
+                <li>Responsive web interface</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2 class="text-3xl font-semibold section-title">Use Cases</h2>
+            <ul class="feature-list text-gray-700">
+                <li>Content analysis and description</li>
+                <li>Visual content moderation</li>
+                <li>Image and video tagging</li>
+                <li>Media content verification</li>
+                <li>Accessibility analysis</li>
+                <li>Content categorization</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2 class="text-3xl font-semibold section-title">Why Gemini Analyzer?</h2>
+            <ul class="feature-list text-gray-700">
+                <li>Powered by Google's advanced Gemini AI model</li>
+                <li>Simple and intuitive user interface</li>
+                <li>Supports multiple media formats</li>
+                <li>Real-time analysis capabilities</li>
+                <li>Customizable analysis options</li>
+                <li>Open-source and extensible</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-gray-600">
+        <p>&copy; 2025 Gemini Analyzer. All rights reserved.</p>
+    </footer>
+</body>
+</html>

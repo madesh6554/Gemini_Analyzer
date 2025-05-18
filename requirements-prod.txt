@@ -1,0 +1,17 @@
+flask==2.3.0
+flask-cors==4.0.0
+werkzeug==3.0.0
+requests==2.31.0
+opencv-python-headless==4.8.0
+numpy==1.24.0
+Pillow==10.0.0
+python-dotenv==1.0.0
+python-jose==3.3.0
+pycryptodome==3.19.0
+secure-smtplib==1.0.0
+python-magic==0.4.27
+pydantic==2.0.0
+gunicorn==21.2.0
+supervisor==4.2.5
+prometheus-client==0.19.0
+python-json-logger==2.0.7
