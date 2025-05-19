@@ -13,12 +13,19 @@ def configure_genai():
         if not Config.API_KEY:
             raise ValueError("GEMINI_API_KEY is not set in environment variables")
         genai.configure(api_key=Config.API_KEY)
+        return True
     except Exception as e:
         print(f"Error configuring Gemini AI: {str(e)}")
         raise
 
-# Configure Gemini AI
-configure_genai()
+# Initialize Gemini client when needed
+genai_client = None
+def get_genai_client():
+    global genai_client
+    if genai_client is None:
+        configure_genai()
+        genai_client = genai.GenerativeModel(model="gemini-pro")
+    return genai_client
 
 def process_input(source: str, prompt: str, max_retries=3) -> str:
     """Universal processor for all input types including YouTube"""
