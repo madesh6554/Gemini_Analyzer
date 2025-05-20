@@ -165,10 +165,18 @@
         </div>
     </main>
 
-    <script src="config.js"></script>
-        <script>
+    <script>
+        // Get API endpoints from config.js
+        const config = {
+            apiUrl: window.location.origin,
+            apiEndpoints: {
+                analyze: '/api/analyze',
+                upload: '/api/upload'
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
-            const API_BASE_URL = window.config.API_BASE_URL;
+            const API_BASE_URL = config.apiUrl;
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const youtubeUrl = document.getElementById('youtubeUrl');
@@ -294,23 +302,24 @@
                     if (fileInput.files.length > 0) {
                         // Handle file upload
                         formData.append('file', fileInput.files[0]);
-                        formData.append('prompt', prompt.value.trim());
+                        formData.append('prompt', analysisPrompt);
+                        formData.append('source_type', 'file');
                         
-                        response = await fetch(`${window.config.API_BASE_URL}/api/upload`, {
+                        response = await fetch('http://127.0.0.1:5000/api/analyze', {
                             method: 'POST',
                             headers: {
-                                'X-API-Key': window.config.API_KEY,
-                                'Content-Type': 'multipart/form-data'
+                                'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
                             },
-                            body: formData,
+                            body: formData
                         });
                     } else if (youtubeUrl.value.trim()) {
                         // Handle YouTube URL
-                        formData.append('source_type', 'url');
-                        formData.append('url', youtubeUrl.value.trim());
-                        formData.append('prompt', analysisPrompt);
+                        const youtubeFormData = new FormData();
+                        youtubeFormData.append('source_type', 'url');
+                        youtubeFormData.append('url', youtubeUrl.value.trim());
+                        youtubeFormData.append('prompt', analysisPrompt);
                         
-                        response = await fetch(`${window.config.API_BASE_URL}/api/analyze`, {
+                        response = await fetch('http://127.0.0.1:5000/api/analyze', {
                             method: 'POST',
                             headers: {
                                 'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
@@ -333,27 +342,15 @@
                         throw new Error(data.error);
                     }
                     
-                    // Update result
                     result.innerHTML = `<div class="bg-white p-4 rounded-lg shadow">
                         <h3 class="text-lg font-semibold mb-2">Analysis Result:</h3>
                         <p class="text-gray-800 whitespace-pre-wrap">${data.result}</p>
                     </div>`;
-                    
-                    // Handle preview URL if present
-                    if (data.preview_url) {
-                        previewContainer.innerHTML = `
-                            <div class="preview-image-container">
-                                <img src="${API_BASE_URL}${data.preview_url}" class="preview-image" alt="Preview">
-                            </div>
-                        `;
-                    } else {
-                        previewContainer.innerHTML = '<p class="text-gray-500 text-center">Preview not available</p>';
-                    };
                 } catch (error) {
                     console.error('Analysis error:', error);
                     result.innerHTML = `<div class="bg-red-50 p-4 rounded-lg">
                         <p class="text-red-600">Error: ${error.message}</p>
-                        <p class="text-sm text-red-500 mt-2">Please check the browser console for more details</p>
+                        <p class="text-sm text-red-500 mt-2">Please make sure the server is running at http://localhost:5000</p>
                     </div>`;
                 } finally {
                     // Reset button state
