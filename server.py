@@ -48,7 +48,7 @@ def rate_limit():
 # API Key validation
 def validate_api_key():
     api_key = request.headers.get('X-API-Key')
-    if not api_key or api_key != Config.API_KEY:
+    if not api_key or api_key != 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM':
         return False
     return True
 
