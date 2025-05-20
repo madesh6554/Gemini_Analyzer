@@ -177,34 +177,34 @@ def upload_file():
         temp_path = os.path.join(temp_dir, filename)
         file.save(temp_path)
         
-        try:
-            # Process the file
-            result = process_input(temp_path, prompt)
+        # Process the file
+        result = process_input(temp_path, prompt)
+        
+        # If it's an image, create a preview URL
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            return jsonify({
+                'result': result,
+                'preview_url': f'/api/preview/{filename}'
+            })
+        else:
+            return jsonify({'result': result})
             
-            # If it's an image, create a preview URL
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-                return jsonify({
-                    'result': result,
-                    'preview_url': f'/api/preview/{filename}'
-                })
-            else:
-                return jsonify({'result': result})
-        finally:
-            # Clean up the temp directory
-            if os.path.exists(temp_dir):
-                import shutil
-                shutil.rmtree(temp_dir)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-        finally:
-            # Clean up
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+        # Clean up if there was an error
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        if os.path.exists(temp_dir):
+            import shutil
+            shutil.rmtree(temp_dir)
         
-        return jsonify({'result': result})
-        
-    except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        # Always clean up
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        if os.path.exists(temp_dir):
+            import shutil
+            shutil.rmtree(temp_dir)
 
 @app.route('/api/preview/<path:filename>')
 def preview(filename):
