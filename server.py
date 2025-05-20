@@ -25,20 +25,6 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     return response
 
-app = Flask(__name__, static_folder='static')
-
-# Enable CORS for all routes
-@app.after_request
-def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    return response
-
-app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
-app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
-
 # Rate limiting middleware
 rate_limits = {}
 
@@ -182,9 +168,13 @@ def upload_file():
         if not allowed_file(file.filename):
             return jsonify({'error': 'File type not allowed'}), 400
             
-        # Save the file temporarily
-        temp_path = os.path.join('temp', file.filename)
-        os.makedirs('temp', exist_ok=True)
+        # Create temp directory if it doesn't exist
+        temp_dir = os.path.join('temp', str(int(time.time())))
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        # Save file with unique name
+        filename = secure_filename(file.filename)
+        temp_path = os.path.join(temp_dir, filename)
         file.save(temp_path)
         
         try:
@@ -192,13 +182,20 @@ def upload_file():
             result = process_input(temp_path, prompt)
             
             # If it's an image, create a preview URL
-            if file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-                with open(temp_path, 'rb') as f:
-                    img_data = f.read()
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
                 return jsonify({
                     'result': result,
-                    'preview_url': f'/api/preview/{file.filename}'
+                    'preview_url': f'/api/preview/{filename}'
                 })
+            else:
+                return jsonify({'result': result})
+        finally:
+            # Clean up the temp directory
+            if os.path.exists(temp_dir):
+                import shutil
+                shutil.rmtree(temp_dir)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
         finally:
             # Clean up
             if os.path.exists(temp_path):
@@ -213,14 +210,14 @@ def upload_file():
 def preview(filename):
     """Handle media preview requests"""
     try:
-        if filename.startswith('http'):
-            # For external URLs, validate and return
-            if is_valid_image_url(filename):
-                return jsonify({'url': filename})
-            return jsonify({'error': 'Invalid image URL'}), 400
-        else:
-            # For local files
-            return send_from_directory('temp', filename)
+        # Look for file in temp directories
+        temp_dirs = [d for d in os.listdir('temp') if os.path.isdir(os.path.join('temp', d))]
+        for temp_dir in temp_dirs:
+            file_path = os.path.join('temp', temp_dir, filename)
+            if os.path.exists(file_path):
+                return send_file(file_path)
+        
+        return jsonify({'error': 'Preview not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 

@@ -334,15 +334,27 @@
                         throw new Error(data.error);
                     }
                     
+                    // Update result
                     result.innerHTML = `<div class="bg-white p-4 rounded-lg shadow">
                         <h3 class="text-lg font-semibold mb-2">Analysis Result:</h3>
                         <p class="text-gray-800 whitespace-pre-wrap">${data.result}</p>
                     </div>`;
+                    
+                    // Handle preview URL if present
+                    if (data.preview_url) {
+                        previewContainer.innerHTML = `
+                            <div class="preview-image-container">
+                                <img src="${API_BASE_URL}${data.preview_url}" class="preview-image" alt="Preview">
+                            </div>
+                        `;
+                    } else {
+                        previewContainer.innerHTML = '<p class="text-gray-500 text-center">Preview not available</p>';
+                    };
                 } catch (error) {
                     console.error('Analysis error:', error);
                     result.innerHTML = `<div class="bg-red-50 p-4 rounded-lg">
                         <p class="text-red-600">Error: ${error.message}</p>
-                        <p class="text-sm text-red-500 mt-2">Please make sure the server is running at http://localhost:5000</p>
+                        <p class="text-sm text-red-500 mt-2">Please check the browser console for more details</p>
                     </div>`;
                 } finally {
                     // Reset button state
