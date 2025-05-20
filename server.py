@@ -50,7 +50,15 @@ def validate_api_key():
     api_key = request.headers.get('X-API-Key')
     if not api_key or api_key != 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM':
         return False
-    return True
+    
+    # Set up Google Cloud credentials
+    try:
+        import google.auth
+        credentials, project = google.auth.default()
+        return True
+    except Exception as e:
+        print(f"Error setting up Google Cloud credentials: {str(e)}")
+        return False
 
 # Before request middleware
 @app.before_request
