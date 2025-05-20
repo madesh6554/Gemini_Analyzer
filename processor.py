@@ -13,7 +13,7 @@ def configure_genai():
         if not Config.API_KEY:
             raise ValueError("GEMINI_API_KEY is not set in environment variables")
         
-        # Configure with API key
+        # Configure with API key and model name
         genai.configure(api_key=Config.API_KEY)
         return True
     except Exception as e:
