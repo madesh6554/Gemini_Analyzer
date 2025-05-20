@@ -168,7 +168,7 @@
     <script src="config.js"></script>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const API_BASE_URL = 'http://127.0.0.1:5000';
+            const API_BASE_URL = window.config.API_BASE_URL;
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const youtubeUrl = document.getElementById('youtubeUrl');
@@ -294,15 +294,15 @@
                     if (fileInput.files.length > 0) {
                         // Handle file upload
                         formData.append('file', fileInput.files[0]);
-                        formData.append('prompt', analysisPrompt);
-                        formData.append('source_type', 'file');
+                        formData.append('prompt', prompt.value.trim());
+                        formData.append('api_key', window.config.API_KEY);
                         
-                        response = await fetch('http://127.0.0.1:5000/api/analyze', {
+                        response = await fetch(`${API_BASE_URL}/api/upload`, {
                             method: 'POST',
                             headers: {
-                                'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
+                                'X-API-Key': window.config.API_KEY
                             },
-                            body: formData
+                            body: formData,
                         });
                     } else if (youtubeUrl.value.trim()) {
                         // Handle YouTube URL
