@@ -295,23 +295,22 @@
                         // Handle file upload
                         formData.append('file', fileInput.files[0]);
                         formData.append('prompt', prompt.value.trim());
-                        formData.append('api_key', window.config.API_KEY);
                         
-                        response = await fetch(`${API_BASE_URL}/api/upload`, {
+                        response = await fetch(`${window.config.API_BASE_URL}/api/upload`, {
                             method: 'POST',
                             headers: {
-                                'X-API-Key': window.config.API_KEY
+                                'X-API-Key': window.config.API_KEY,
+                                'Content-Type': 'multipart/form-data'
                             },
                             body: formData,
                         });
                     } else if (youtubeUrl.value.trim()) {
                         // Handle YouTube URL
-                        const youtubeFormData = new FormData();
-                        youtubeFormData.append('source_type', 'url');
-                        youtubeFormData.append('url', youtubeUrl.value.trim());
-                        youtubeFormData.append('prompt', analysisPrompt);
+                        formData.append('source_type', 'url');
+                        formData.append('url', youtubeUrl.value.trim());
+                        formData.append('prompt', analysisPrompt);
                         
-                        response = await fetch('http://127.0.0.1:5000/api/analyze', {
+                        response = await fetch(`${window.config.API_BASE_URL}/api/analyze`, {
                             method: 'POST',
                             headers: {
                                 'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'

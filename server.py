@@ -13,17 +13,78 @@ import time
 from functools import wraps
 
 app = Flask(__name__, static_url_path='', static_folder='static')
-app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
-app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Configuration
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))
+app.config['ALLOWED_EXTENSIONS'] = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg,gif,webp,mp4,webm,ogg').split(','))
 
 # Enable CORS for all routes
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
     return response
+
+# Rate limiting middleware
+rate_limits = {}
+
+def rate_limit():
+    ip = request.remote_addr
+    current_time = time.time()
+    
+    if ip not in rate_limits:
+        rate_limits[ip] = []
+    
+    # Remove old requests
+    rate_limits[ip] = [t for t in rate_limits[ip] if t > current_time - int(os.getenv('RATE_LIMIT_WINDOW', 3600))]
+    
+    if len(rate_limits[ip]) >= int(os.getenv('MAX_REQUESTS_PER_HOUR', 1000)):
+        return False
+    
+    rate_limits[ip].append(current_time)
+    return True
+
+# API Key validation
+def validate_api_key():
+    api_key = request.headers.get('X-API-Key')
+    if not api_key:
+        return False
+    return True
+
+# Before request middleware
+@app.before_request
+def before_request():
+    if not rate_limit():
+        return jsonify({'error': 'Rate limit exceeded'}), 429
+    
+    if request.path.startswith('/api/') and not validate_api_key():
+        return jsonify({'error': 'Invalid API key'}), 401
+
+# Error handling
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({'error': 'Bad request'}), 400
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({'error': 'Unauthorized'}), 401
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal server error'}), 500
+
+# Ensure upload directory exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Rate limiting middleware
 rate_limits = {}
@@ -222,5 +283,5 @@ def preview(filename):
         return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 3000))  # Default to 3000 for Render
     app.run(host='0.0.0.0', port=port, debug=False) 
