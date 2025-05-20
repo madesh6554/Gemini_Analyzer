@@ -12,12 +12,49 @@ def configure_genai():
     try:
         if not Config.API_KEY:
             raise ValueError("GEMINI_API_KEY is not set in environment variables")
-        
-        # Configure with API key and model name
-        genai.configure(api_key=Config.API_KEY)
         return True
     except Exception as e:
         print(f"Error configuring Gemini AI: {str(e)}")
+        raise
+
+def get_genai_client():
+    return None  # We won't use the client library anymore
+
+def analyze_media(file_path: str, prompt: str):
+    try:
+        # Read the file
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
+
+        # Prepare the request
+        headers = {
+            'Authorization': f'Bearer {Config.API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Prepare the payload
+        payload = {
+            'prompt': prompt,
+            'model': 'gemini-pro',
+            'content': file_content,
+            'mimeType': mimetypes.guess_type(file_path)[0]
+        }
+
+        # Send the request
+        response = requests.post(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+            headers=headers,
+            json=payload
+        )
+        
+        # Process the response
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception(f"API Error: {response.status_code} - {response.text}")
+            
+    except Exception as e:
+        print(f"Error in analyze_media: {str(e)}")
         raise
 
 # Initialize Gemini client when needed
