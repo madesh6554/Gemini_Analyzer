@@ -14,12 +14,19 @@ from functools import wraps
 
 app = Flask(__name__, static_folder='static')
 
+# Set up CORS
+from flask_cors import CORS
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Configure port
+port = int(os.environ.get('PORT', 5000))
+
 # Enable CORS for all routes
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
     return response
 
 app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
@@ -48,7 +55,8 @@ def rate_limit():
 # API Key validation
 def validate_api_key():
     api_key = request.headers.get('X-API-Key')
-    if not api_key or api_key != 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM':
+    expected_key = os.getenv('GEMINI_API_KEY')
+    if not api_key or api_key != expected_key:
         return False
     
     # Set up Google Cloud credentials

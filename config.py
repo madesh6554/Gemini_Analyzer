@@ -23,7 +23,7 @@ class Config:
     UPLOAD_FOLDER = 'uploads'
     
     # CORS Settings
-    CORS_ORIGINS = ['https://gemini-analyzer.onrender.com', 'http://localhost:5000']
+    CORS_ORIGINS = ['http://localhost:5000', 'https://yourdomain.com']
     
     # Error Handling Settings
     MAX_RETRIES = 3

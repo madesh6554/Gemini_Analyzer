@@ -166,11 +166,11 @@
     </main>
 
     <script>
-        // Get API endpoints from config.js
+        // Get API endpoints
         const config = {
-            apiUrl: 'http://localhost:5000/',
+            apiUrl: window.location.origin,
             apiEndpoints: {
-                analyze: 'api/analyze'
+                analyze: '/api/analyze'
             },
             apiKey: 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
         };
