@@ -12,79 +12,19 @@ from config import Config
 import time
 from functools import wraps
 
-app = Flask(__name__, static_url_path='', static_folder='static')
-
-# Load environment variables
-from dotenv import load_dotenv
-load_dotenv()
-
-# Configuration
-app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))
-app.config['ALLOWED_EXTENSIONS'] = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg,gif,webp,mp4,webm,ogg').split(','))
+app = Flask(__name__, static_folder='static')
 
 # Enable CORS for all routes
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     return response
 
-# Rate limiting middleware
-rate_limits = {}
-
-def rate_limit():
-    ip = request.remote_addr
-    current_time = time.time()
-    
-    if ip not in rate_limits:
-        rate_limits[ip] = []
-    
-    # Remove old requests
-    rate_limits[ip] = [t for t in rate_limits[ip] if t > current_time - int(os.getenv('RATE_LIMIT_WINDOW', 3600))]
-    
-    if len(rate_limits[ip]) >= int(os.getenv('MAX_REQUESTS_PER_HOUR', 1000)):
-        return False
-    
-    rate_limits[ip].append(current_time)
-    return True
-
-# API Key validation
-def validate_api_key():
-    api_key = request.headers.get('X-API-Key')
-    if not api_key:
-        return False
-    return True
-
-# Before request middleware
-@app.before_request
-def before_request():
-    if not rate_limit():
-        return jsonify({'error': 'Rate limit exceeded'}), 429
-    
-    if request.path.startswith('/api/') and not validate_api_key():
-        return jsonify({'error': 'Invalid API key'}), 401
-
-# Error handling
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({'error': 'Bad request'}), 400
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return jsonify({'error': 'Unauthorized'}), 401
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'error': 'Not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({'error': 'Internal server error'}), 500
-
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
+app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
 
 # Rate limiting middleware
 rate_limits = {}
@@ -229,59 +169,48 @@ def upload_file():
         if not allowed_file(file.filename):
             return jsonify({'error': 'File type not allowed'}), 400
             
-        # Create temp directory if it doesn't exist
-        temp_dir = os.path.join('temp', str(int(time.time())))
-        os.makedirs(temp_dir, exist_ok=True)
-        
-        # Save file with unique name
-        filename = secure_filename(file.filename)
-        temp_path = os.path.join(temp_dir, filename)
+        # Save the file temporarily
+        temp_path = os.path.join('temp', file.filename)
+        os.makedirs('temp', exist_ok=True)
         file.save(temp_path)
         
-        # Process the file
-        result = process_input(temp_path, prompt)
-        
-        # If it's an image, create a preview URL
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-            return jsonify({
-                'result': result,
-                'preview_url': f'/api/preview/{filename}'
-            })
-        else:
-            return jsonify({'result': result})
+        try:
+            # Process the file
+            result = process_input(temp_path, prompt)
             
-    except Exception as e:
-        # Clean up if there was an error
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-        if os.path.exists(temp_dir):
-            import shutil
-            shutil.rmtree(temp_dir)
+            # If it's an image, create a preview URL
+            if file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                with open(temp_path, 'rb') as f:
+                    img_data = f.read()
+                return jsonify({
+                    'result': result,
+                    'preview_url': f'/api/preview/{file.filename}'
+                })
+        finally:
+            # Clean up
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
         
+        return jsonify({'result': result})
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
-    finally:
-        # Always clean up
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-        if os.path.exists(temp_dir):
-            import shutil
-            shutil.rmtree(temp_dir)
 
 @app.route('/api/preview/<path:filename>')
 def preview(filename):
     """Handle media preview requests"""
     try:
-        # Look for file in temp directories
-        temp_dirs = [d for d in os.listdir('temp') if os.path.isdir(os.path.join('temp', d))]
-        for temp_dir in temp_dirs:
-            file_path = os.path.join('temp', temp_dir, filename)
-            if os.path.exists(file_path):
-                return send_file(file_path)
-        
-        return jsonify({'error': 'Preview not found'}), 404
+        if filename.startswith('http'):
+            # For external URLs, validate and return
+            if is_valid_image_url(filename):
+                return jsonify({'url': filename})
+            return jsonify({'error': 'Invalid image URL'}), 400
+        else:
+            # For local files
+            return send_from_directory('temp', filename)
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 3000))  # Default to 3000 for Render
-    app.run(host='0.0.0.0', port=port, debug=False) 
+    port = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=port) 
