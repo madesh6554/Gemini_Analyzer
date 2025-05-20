@@ -306,12 +306,14 @@
                         formData.append('source_type', 'file');
                         
                         response = await fetch(`${config.apiUrl}${config.apiEndpoints.analyze}`, {
+    
                             method: 'POST',
                             headers: {
                                 'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
                             },
+                            credentials: 'include',
                             body: formData
-                        });
+});
                     } else if (youtubeUrl.value.trim()) {
                         // Handle YouTube URL
                         const youtubeFormData = new FormData();
@@ -319,13 +321,15 @@
                         youtubeFormData.append('url', youtubeUrl.value.trim());
                         youtubeFormData.append('prompt', analysisPrompt);
                         
+                 
                         response = await fetch(`${config.apiUrl}${config.apiEndpoints.analyze}`, {
                             method: 'POST',
                             headers: {
                                 'X-API-Key': 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
                             },
-                            body: youtubeFormData
-                        });
+                            credentials: 'include',
+                            body: formData
+});
                     } else {
                         alert('Please provide either a file or URL');
                         return;
