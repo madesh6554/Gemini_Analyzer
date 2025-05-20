@@ -6,7 +6,7 @@ load_dotenv()
 
 class Config:
     # API Configuration
-    API_KEY = os.getenv('GEMINI_API_KEY')
+    API_KEY = 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
     API_URL = os.getenv('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent')
     
     # Security Settings
