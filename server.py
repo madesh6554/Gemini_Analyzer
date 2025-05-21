@@ -27,6 +27,9 @@ app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
 app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
 
+# Configure environment
+is_development = os.environ.get('FLASK_ENV') == 'development'
+
 # Configure port
 port = int(os.environ.get('PORT', 5000))
 
@@ -52,6 +55,9 @@ limiter = Limiter(
     key_func=get_remote_address,
     default_limits=["1000 per hour"]
 )
+
+# Configure CORS
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5000", "https://gemini-analyzer.onrender.com"]}}, supports_credentials=True)
 
 # Set up rate limiting
 limiter = Limiter(
@@ -232,5 +238,7 @@ def preview(filename):
         return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='127.0.0.1', port=port, debug=True) 
+    if is_development:
+        app.run(host='127.0.0.1', port=port, debug=True)
+    else:
+        app.run(host='0.0.0.0', port=port) 
