@@ -287,58 +287,44 @@
                     return;
                 }
 
-                // Show loading state
+                const url = youtubeUrl.value.trim();
+                const file = fileInput.files[0];
+
+                if (!url && !file) {
+                    alert('Please upload a file or enter a YouTube URL');
+                    return;
+                }
+
                 analyzeBtn.disabled = true;
-                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
-                result.innerHTML = '<p class="text-blue-600">Analyzing media... Please wait.</p>';
-                
+                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                result.innerHTML = '<p class="text-gray-800">Analyzing...</p>';
+
                 try {
-                    let response;
                     const formData = new FormData();
+                    formData.append('prompt', analysisPrompt);
                     
-                    if (fileInput.files.length > 0) {
-                        // Handle file upload
-                        formData.append('file', fileInput.files[0]);
-                        formData.append('prompt', analysisPrompt);
-                        formData.append('source_type', 'file');
-                        
-                        response = await fetch(`${config.apiUrl}${config.apiEndpoints.analyze}`, {
-                            method: 'POST',
-                            headers: {
-                                'X-API-Key': config.apiKey
-                            },
-                            credentials: 'include',
-                            body: formData
-                        });
-                    } else if (youtubeUrl.value.trim()) {
-                        // Handle YouTube URL
-                        const youtubeFormData = new FormData();
-                        youtubeFormData.append('source_type', 'url');
-                        youtubeFormData.append('url', youtubeUrl.value.trim());
-                        youtubeFormData.append('prompt', analysisPrompt);
-                        
-                        response = await fetch(`${config.apiUrl}${config.apiEndpoints.analyze}`, {
-                            method: 'POST',
-                            headers: {
-                                'X-API-Key': config.apiKey
-                            },
-                            credentials: 'include',
-                            body: youtubeFormData
-                        });
+                    if (url) {
+                        formData.append('source_type', 'url');
+                        formData.append('url', url);
                     } else {
-                        alert('Please provide either a file or URL');
-                        return;
+                        formData.append('source_type', 'file');
+                        formData.append('file', file);
                     }
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || `Server responded with status: ${response.status}`);
-                    }
+                    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.analyze}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-Key': config.apiKey
+                        },
+                        body: formData
+                    });
 
                     const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error);
+
+                    if (response.ok) {
+                        result.innerHTML = `<p class="text-gray-800">${data.result}</p>`;
+                    } else {
+                        throw new Error(data.error || 'Analysis failed');
                     }
                     
                     result.innerHTML = `<div class="bg-white p-4 rounded-lg shadow">

@@ -19,21 +19,13 @@ import time
 
 app = Flask(__name__, static_folder='static')
 
-# Set up CORS
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-# Configure from environment variables
-app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
-app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
-
 # Configure environment
 is_development = os.environ.get('FLASK_ENV') == 'development'
 
 # Configure port
 port = int(os.environ.get('PORT', 5000))
 
-# Initialize Google Generative AI with API key from environment
+# Initialize Google Generative AI
 api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not api_key:
     print("Warning: GOOGLE_API_KEY not set. Using default configuration for local development")
@@ -42,7 +34,6 @@ if not api_key:
     api_key = os.environ.get('GOOGLE_API_KEY', '')
     if not api_key:
         print("Warning: No API key found. Using default configuration")
-        # Use default configuration for testing
         genai.configure(api_key='')
     else:
         genai.configure(api_key=api_key)
@@ -60,7 +51,20 @@ limiter = Limiter(
 )
 
 # Configure CORS
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5000", "https://gemini-analyzer.onrender.com"]}}, supports_credentials=True)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:5000", "https://gemini-analyzer.onrender.com"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "expose_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True,
+        "max_age": 600
+    }
+})
+
+# Configure from environment variables
+app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
+app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
 
 # Rate limiting middleware
 rate_limits = {}
