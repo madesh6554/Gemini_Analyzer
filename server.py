@@ -30,8 +30,18 @@ app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpe
 # Configure port
 port = int(os.environ.get('PORT', 5000))
 
-# Initialize Google Generative AI
-genai.configure(api_key=os.environ.get('GOOGLE_API_KEY', ''))
+# Initialize Google Generative AI with API key from environment
+api_key = os.environ.get('GOOGLE_API_KEY')
+if not api_key:
+    raise ValueError("GOOGLE_API_KEY environment variable is not set")
+genai.configure(api_key=api_key)
+
+# Set up rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["1000 per hour"]
+)
 
 # Rate limiting middleware
 rate_limits = {}
