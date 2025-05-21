@@ -19,6 +19,11 @@ def analyze_media(file_path: str, prompt: str) -> str:
             'video/mp4'
         )
         
+        # Check file size
+        file_size = os.path.getsize(file_path)
+        if file_size > Config.MAX_CONTENT_LENGTH:
+            raise Exception("File too large. Maximum size is 16MB")
+            
         with open(file_path, 'rb') as f:
             media_data = f.read()
 
@@ -140,10 +145,15 @@ def process_direct_url(url: str, prompt: str) -> str:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
-        # Get MIME type from headers first
+        # Get MIME type and size from headers first
         response = requests.head(url, allow_redirects=True, headers=headers)
         content_type = response.headers.get('Content-Type', '').split(';')[0].strip()
+        content_length = int(response.headers.get('Content-Length', 0))
         
+        # Check file size
+        if content_length > Config.MAX_CONTENT_LENGTH:
+            return "File too large. Maximum size is 16MB"
+            
         # Create temp file with proper extension
         ext = mimetypes.guess_extension(content_type) or '.tmp'
         with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as f:
@@ -161,44 +171,6 @@ def process_direct_url(url: str, prompt: str) -> str:
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
-
-def process_local_file(file_path: str, prompt: str) -> str:
-    """Handle local file uploads"""
-    if not os.path.exists(file_path):
-        return "Error: File not found"
-    
-    return analyze_media(file_path, prompt)
-
-def process_direct_url(url: str, prompt: str) -> str:
-    """Handle direct media URLs with proper image support"""
-    temp_path = None
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    try:
-        # Get MIME type from headers first
-        response = requests.head(url, allow_redirects=True, headers=headers)
-        content_type = response.headers.get('Content-Type', '').split(';')[0].strip()
-        
-        # Create temp file with proper extension
-        ext = mimetypes.guess_extension(content_type) or '.tmp'
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as f:
-            # Download content
-            response = requests.get(url, stream=True, timeout=30, headers=headers)
-            response.raise_for_status()
-            
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-            temp_path = f.name
-
-        return analyze_media(temp_path, prompt)
-    except Exception as e:
-        return f"URL Error: {str(e)}"
-    finally:
-        if temp_path and os.path.exists(temp_path):
-            os.remove(temp_path)
-
-def process_local_file(file_path: str, prompt: str) -> str:
     """Handle local file uploads"""
     if not os.path.exists(file_path):
         return "Error: File not found"

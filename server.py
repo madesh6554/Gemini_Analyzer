@@ -18,12 +18,17 @@ app = Flask(__name__, static_folder='static')
 from flask_cors import CORS
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
+# Configure from environment variables
+app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
+app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
+
 # Configure port
 port = int(os.environ.get('PORT', 5000))
 
-app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
-app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
+# Initialize Google Generative AI
+os.environ['GOOGLE_API_KEY'] = os.environ.get('GOOGLE_API_KEY', '')
+genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
 
 # Rate limiting middleware
 rate_limits = {}
