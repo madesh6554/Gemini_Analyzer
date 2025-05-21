@@ -31,10 +31,27 @@ app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpe
 port = int(os.environ.get('PORT', 5000))
 
 # Initialize Google Generative AI with API key from environment
-api_key = os.environ.get('GOOGLE_API_KEY')
+api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY environment variable is not set")
-genai.configure(api_key=api_key)
+    print("Warning: GOOGLE_API_KEY not set. Using default configuration for local development")
+    # For local development, use the API key from .env file
+    load_dotenv()
+    api_key = os.environ.get('GOOGLE_API_KEY', '')
+    if not api_key:
+        print("Warning: No API key found. Using default configuration")
+        # Use default configuration for testing
+        genai.configure(api_key='')
+    else:
+        genai.configure(api_key=api_key)
+else:
+    genai.configure(api_key=api_key)
+
+# Set up rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["1000 per hour"]
+)
 
 # Set up rate limiting
 limiter = Limiter(
