@@ -171,6 +171,8 @@ def process_direct_url(url: str, prompt: str) -> str:
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
+
+def process_local_file(file_path: str, prompt: str) -> str:
     """Handle local file uploads"""
     if not os.path.exists(file_path):
         return "Error: File not found"
