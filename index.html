@@ -165,15 +165,11 @@
         </div>
     </main>
 
-    <script src="config.js"></script>
     <script>
-        // Use config from config.js
-        const config = window.config;
-        const API_BASE_URL = config.apiUrl;
-        const API_ENDPOINTS = config.apiEndpoints;
+        // Import config
+        import config from './static/config.js';
 
         document.addEventListener('DOMContentLoaded', () => {
-            const API_BASE_URL = config.apiUrl;
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const youtubeUrl = document.getElementById('youtubeUrl');
@@ -287,44 +283,34 @@
                     return;
                 }
 
-                const url = youtubeUrl.value.trim();
-                const file = fileInput.files[0];
-
-                if (!url && !file) {
-                    alert('Please upload a file or enter a YouTube URL');
-                    return;
-                }
-
-                analyzeBtn.disabled = true;
-                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
-                result.innerHTML = '<p class="text-gray-800">Analyzing...</p>';
-
                 try {
-                    const formData = new FormData();
-                    formData.append('prompt', analysisPrompt);
+                    analyzeBtn.disabled = true;
+                    analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                    result.innerHTML = '<p class="text-gray-500">Analyzing media...</p>';
+
+                    let sourceType = 'file';
+                    let source = '';
                     
-                    if (url) {
-                        formData.append('source_type', 'url');
-                        formData.append('url', url);
+                    if (youtubeUrl.value.trim()) {
+                        sourceType = 'url';
+                        source = youtubeUrl.value.trim();
+                    } else if (fileInput.files.length > 0) {
+                        sourceType = 'file';
+                        source = fileInput.files[0];
                     } else {
-                        formData.append('source_type', 'file');
-                        formData.append('file', file);
+                        alert('Please provide either a file or YouTube URL');
+                        return;
                     }
 
-                    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.analyze}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-API-Key': config.apiKey
-                        },
-                        body: formData
-                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || `Server responded with status: ${response.status}`);
+                    }
 
                     const data = await response.json();
-
-                    if (response.ok) {
-                        result.innerHTML = `<p class="text-gray-800">${data.result}</p>`;
-                    } else {
-                        throw new Error(data.error || 'Analysis failed');
+                    
+                    if (data.error) {
+                        throw new Error(data.error);
                     }
                     
                     result.innerHTML = `<div class="bg-white p-4 rounded-lg shadow">
