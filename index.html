@@ -165,15 +165,12 @@
         </div>
     </main>
 
+    <script src="config.js"></script>
     <script>
-        // Get API endpoints
-        const config = {
-            apiUrl: 'http://localhost:5000',
-            apiEndpoints: {
-                analyze: '/api/analyze'
-            },
-            apiKey: 'AIzaSyAhYUcUSjgW8_qHTg6a_uXqezq1JJ9JCiM'
-        };
+        // Use config from config.js
+        const config = window.config;
+        const API_BASE_URL = config.apiUrl;
+        const API_ENDPOINTS = config.apiEndpoints;
 
         document.addEventListener('DOMContentLoaded', () => {
             const API_BASE_URL = config.apiUrl;
