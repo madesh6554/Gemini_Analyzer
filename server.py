@@ -1,21 +1,25 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
-from processor import process_input
-import os
-import requests
 from werkzeug.utils import secure_filename
+import os
+import json
+from processor import process_input
+from config import Config
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 import mimetypes
+import google.generativeai as genai
+import requests
+from functools import wraps
 import cv2
 import numpy as np
 from PIL import Image
 import io
-from config import Config
 import time
-from functools import wraps
 
 app = Flask(__name__, static_folder='static')
 
 # Set up CORS
-from flask_cors import CORS
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Configure from environment variables
@@ -27,8 +31,7 @@ app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpe
 port = int(os.environ.get('PORT', 5000))
 
 # Initialize Google Generative AI
-os.environ['GOOGLE_API_KEY'] = os.environ.get('GOOGLE_API_KEY', '')
-genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
+genai.configure(api_key=os.environ.get('GOOGLE_API_KEY', ''))
 
 # Rate limiting middleware
 rate_limits = {}
