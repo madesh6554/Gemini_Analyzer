@@ -1,5 +1,5 @@
 const config = {
-    apiUrl: 'http://localhost:5000',
+    apiUrl: 'https://gemini-analyzer.onrender.com',
     apiEndpoints: {
         analyze: '/api/analyze',
         upload: '/api/upload'
