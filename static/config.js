@@ -1,5 +1,5 @@
 const config = {
-    apiUrl: window.location.origin,
+    apiUrl: 'http://localhost:5000',
     apiEndpoints: {
         analyze: '/api/analyze',
         upload: '/api/upload'

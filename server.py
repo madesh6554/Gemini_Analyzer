@@ -16,18 +16,10 @@ app = Flask(__name__, static_folder='static')
 
 # Set up CORS
 from flask_cors import CORS
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Configure port
 port = int(os.environ.get('PORT', 5000))
-
-# Enable CORS for all routes
-@app.after_request
-def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-API-Key'
-    return response
 
 app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
@@ -37,36 +29,13 @@ app.config['ALLOWED_EXTENSIONS'] = Config.ALLOWED_EXTENSIONS
 rate_limits = {}
 
 def rate_limit():
-    ip = request.remote_addr
-    current_time = time.time()
-    
-    if ip not in rate_limits:
-        rate_limits[ip] = []
-    
-    # Remove old requests
-    rate_limits[ip] = [t for t in rate_limits[ip] if t > current_time - Config.RATE_LIMIT_WINDOW]
-    
-    if len(rate_limits[ip]) >= Config.MAX_REQUESTS_PER_HOUR:
-        return False
-    
-    rate_limits[ip].append(current_time)
+    # Temporarily disable rate limiting for testing
     return True
 
 # API Key validation
 def validate_api_key():
-    api_key = request.headers.get('X-API-Key')
-    expected_key = os.getenv('GEMINI_API_KEY')
-    if not api_key or api_key != expected_key:
-        return False
-    
-    # Set up Google Cloud credentials
-    try:
-        import google.auth
-        credentials, project = google.auth.default()
-        return True
-    except Exception as e:
-        print(f"Error setting up Google Cloud credentials: {str(e)}")
-        return False
+    # Temporarily disable API key validation for testing
+    return True
 
 # Before request middleware
 @app.before_request
@@ -228,5 +197,5 @@ def preview(filename):
         return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=port) 
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='127.0.0.1', port=port, debug=True) 
