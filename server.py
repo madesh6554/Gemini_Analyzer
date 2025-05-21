@@ -50,21 +50,17 @@ else:
     genai.configure(api_key=api_key)
 
 # Set up rate limiting
+storage_uri = os.environ.get('REDIS_URI', 'memory://')
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["1000 per hour"]
+    default_limits=["1000 per hour"],
+    storage_uri=storage_uri,
+    storage_options={}
 )
 
 # Configure CORS
 CORS(app, resources={r"/*": {"origins": ["http://localhost:5000", "https://gemini-analyzer.onrender.com"]}}, supports_credentials=True)
-
-# Set up rate limiting
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["1000 per hour"]
-)
 
 # Rate limiting middleware
 rate_limits = {}
