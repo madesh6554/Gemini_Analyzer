@@ -16,8 +16,6 @@ import numpy as np
 from PIL import Image
 import io
 import time
-import dotenv
-from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder='static')
 
@@ -29,46 +27,38 @@ app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
 app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
 
-# Configure environment
-is_development = os.environ.get('FLASK_ENV') == 'development'
-
 # Configure port
 port = int(os.environ.get('PORT', 5000))
 
 # Initialize Google Generative AI with API key from environment
-api_key = os.environ.get('GOOGLE_API_KEY')
+api_key = os.environ.get('GOOGLE_API_KEY', '')
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY must be set in environment variables")
+    print("Warning: GOOGLE_API_KEY not set. Using default configuration for local development")
+    # For local development, use the API key from .env file
+    load_dotenv()
+    api_key = os.environ.get('GOOGLE_API_KEY', '')
+    if not api_key:
+        print("Warning: No API key found. Using default configuration")
+        # Use default configuration for testing
+        genai.configure(api_key='')
+    else:
+        genai.configure(api_key=api_key)
+else:
+    genai.configure(api_key=api_key)
 
-genai.configure(api_key=api_key)
-
-# Configure upload settings
-app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB default
-app.config['ALLOWED_EXTENSIONS'] = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,mp4').split(',')
-
-# Configure Redis for rate limiting
-storage_uri = os.environ.get('REDIS_URI', 'memory://')
+# Set up rate limiting
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["1000 per hour"],
-    storage_uri=storage_uri,
-    storage_options={}
+    default_limits=["1000 per hour"]
 )
 
 # Set up rate limiting
-storage_uri = os.environ.get('REDIS_URI', 'memory://')
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["1000 per hour"],
-    storage_uri=storage_uri,
-    storage_options={}
+    default_limits=["1000 per hour"]
 )
-
-# Configure CORS
-CORS(app, resources={r"/*": {"origins": ["*"], "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}}, supports_credentials=True)
 
 # Rate limiting middleware
 rate_limits = {}
@@ -242,7 +232,5 @@ def preview(filename):
         return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    if is_development:
-        app.run(host='127.0.0.1', port=port, debug=True)
-    else:
-        app.run(host='0.0.0.0', port=port) 
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='127.0.0.1', port=port, debug=True) 
